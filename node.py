@@ -4,13 +4,12 @@ class Node:
         self.children = {}
         self.data = data
         self.is_leaf = False
-        self.split_attribute = None #Attribute it was split on
+        self.split_attribute = None #Attribute to split on
 
     def is_pure(self):
         # If 1 or less data points, automatically pure
         if len(self.data) <= 1:
             return True
-        
 
         value_to_match = self.data[0]['Class'] #All must equal this for the node to be pure
         for i in range(0, len(self.data)):
@@ -19,6 +18,8 @@ class Node:
                 return False 
         return True
 
+    # def is_leaf(self):
+        #if len(attribute_list - self.attribute) == 0: return True, else False
 
     def find_most_common(self):
         classes = {}

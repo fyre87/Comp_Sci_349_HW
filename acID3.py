@@ -2,26 +2,19 @@ from node import Node
 import math
 from parse import parse
 
-import pprint
-import pandas as pd
-# import seaborn as sns
-pp = pprint.PrettyPrinter(indent=4)
-
 def getData(datasetName):
-  d = parse(datasetName)
-  attr_names = list(d[0].keys())
+    """
+    in   /  datasetName: raw .csv file
+    out  /  d: data as list of dicts, 
+            attr_names: list of attribute names (including target attr)
+            most_common: calculates most common 'Class' (aka target attr) of entire dataset
+    """
+    d = parse(datasetName)
+    attr_names = list(d[0].keys())
+    Y_valList = [x['Class'] for x in d]
+    most_common = max(set(Y_valList), key=Y_valList.count) 
 #   attr_names.remove('Class') #attr_names without target attribute Class
-  return d, attr_names
-
-def setup(examples):
-  d, attr_names = getData(examples)
-  
-  row_ids = [row for row in range(len(d))] #list of d's row indexes
-  attr_ids = [a for a in range(len(attr_names))] #list of attributes
-  Y_valList = [x['Class'] for x in d]
-
-  return d, attr_names, row_ids, attr_ids, Y_valList
-
+    return d, attr_names, most_common
 
 def find_best_A(data, attributes):
     # Get list of As
@@ -72,50 +65,79 @@ def get_entropy(data):
     entropy = sum([-freq * math.log(freq, 2) if freq else 0 for freq in freqs])
     return entropy
 
+#------------------------
+def main(rawdata): #TODO: remake to be ID3 function?
+    d, attr_names, most_common = getData(rawdata) #initializing variables
+    ID3_helper(d, attr_names, most_common)
+    return
 
-def xyz():
-    d, attr_names, row_ids, attr_ids, Y_valList = setup('candy.data')
-    
-    t1= get_entropy(d)
-
-    # pp.pprint(y)
-    pp.pprint(Y_valList)
-    pp.pprint(len(d))
-    
-# xyz()
-
-def ID3(examples): #first pass -- review 
-    d, attr_names, row_ids, attr_ids, Y_valList = setup(examples)
+def ID3_helper(data, attr_names, targ):
+    # d, attr_names = getData()
     attr_names.remove('Class') #remove class from attribute name list
-    # node = ID3(d, attr_names, Y_valList)
     
-    node = Node(d)
-    node.label = max(set(Y_valList), key=Y_valList.count)  #setting node label to most common label
+    node = Node(data)
+    majority_label = targ
+    node.label = majority_label #setting node label to most common label
 
     # if pure node (all the data in node have the same class)
     if node.is_pure() == True:
-        node.label = node.find_most_common() #node.label or node.value?
+        node.is_leaf = True
         return node
     
     #if no more features to compute, attribute list empty
     if len(attr_names) == 0:
-        #set to most common class in the entire dataset
-        node.label = max(set(Y_valList), key=Y_valList.count)  #node.label or node.value?
+        node.is_leaf = True
         return node
     
-    bestA, bestA_index = find_best_A(d, attr_names)
-    node.value = bestA
-    bestA_vals = get_A_vals(d, bestA)
-    print(bestA_vals)
+    bestA, bestA_index = find_best_A(data, attr_names)
+    node.split_attribute = bestA
+    bestA_vals = get_A_vals(data, bestA)
+    # print(bestA_vals)
+    
     for v in bestA_vals:
-        child = Node(v)
-        node.children.append(child)  # append new child node to current node
-        D_v = partition(d, v, bestA)
-        Y_v = [x['Class'] for x in D_v]
+        # child = Node(v)
+        # node.children[v] = child  # append new child node to current node
+        
+        D_v = partition(data, v, bestA)
+
         if len(D_v) == 0:
-            max(set(Y_valList), key=Y_valList.count)  #set to most common class in the entire dataset
+            child = Node([])
+            child.label = majority_label #set to most common class in the entire dataset
+            child.is_leaf = True
+            node.children[v] = child
         else:
             attr_names.pop(bestA_index)
-            ID3(D_v, attr_names, Y_v)
+            node.children[v] = ID3_helper(D_v, attr_names, majority_label)
 
-ID3('candy.data')
+    return node
+
+def ID3(examples, default):
+  '''
+  Takes in an array of examples, and returns a tree (an instance of Node) 
+  trained on the examples.  Each example is a dictionary of attribute:value pairs,
+  and the target class variable is a special attribute with the name "Class".
+  Any missing attributes are denoted with a value of "?"
+  '''
+
+def prune(node, examples):
+  '''
+  Takes in a trained tree and a validation set of examples.  Prunes nodes in order
+  to improve accuracy on the validation data; the precise pruning strategy is up to you.
+  '''
+
+def test(node, examples):
+  '''
+  Takes in a trained tree and a test set of examples.  Returns the accuracy (fraction
+  of examples the tree classifies correctly).
+  '''
+
+
+
+def evaluate(node, example):
+  '''
+  Takes in a tree and one example.  Returns the Class value that the tree
+  assigns to the example.
+  '''
+
+
+main('candy.data')
