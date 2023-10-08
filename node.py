@@ -4,7 +4,10 @@ class Node:
         self.children = {}
         self.data = data
         self.is_leaf = False
-        self.split_attribute = None #Attribute to split on
+        self.split_attribute = None #Attribute it was split on
+        self.count_correct = 0
+        self.count_incorrect = 0
+        self.should_prune = False
 
     def is_pure(self):
         # If 1 or less data points, automatically pure
@@ -17,23 +20,3 @@ class Node:
                 # Found a disagreement in the nodes data. Return false
                 return False 
         return True
-
-    # def is_leaf(self):
-        #if len(attribute_list - self.attribute) == 0: return True, else False
-
-    def find_most_common(self):
-        classes = {}
-        for i in range(0, len(self.data)):
-            if self.data[i]['Class'] not in classes:
-                classes[self.data[i]['Class']] = 1
-            else:
-                classes[self.data[i]['Class']] = classes[self.data[i]['Class']] + 1
-        
-        # Now loop through the count of each class to find the most common one
-        items = classes.items()
-        common_class = None # Most common element
-        common_value = 0 # Number of occurances of most common element
-        for item in items:
-            if item[1] > common_value:
-                common_class = item[0]
-        return common_class
