@@ -1,5 +1,6 @@
 from node import Node
 import math
+import random
 from parse import parse
 
 def getData(d):
@@ -239,4 +240,91 @@ def evaluate(DT, d):
         # Missing data, just return majority class at current node
         return DT.label
     
+    if d[A] not in DT.children:
+        # More missing data
+        return DT.label
+    
     return evaluate(DT.children[d[A]], d)
+
+###############################
+### Add Random Forest Below ###
+###############################
+
+
+def train_test_split(d):
+    """
+    in   /  d: raw .csv file OR a list of dicts
+    out  /  train_d: 70% of data as list of dicts,
+            test_d: 30% of data as list of dicts,
+    """
+    if type(d) == str:
+        # If given a file path, parse it first
+        d = parse(d)
+    train_d = d[0:int(len(d)*0.7)] #Take 80% for training
+    test_d = d[int(len(d)*0.7):len(d)] #Take 20% for validation
+
+    return train_d, test_d
+
+
+def random_forest_sample(data):
+    """
+    Create a sample with replacement of 50% of the dataset
+    and square root of features number of features. 
+    """
+    attribute_names = list(data[0].keys())
+    attribute_names.remove('Class')
+
+    sample = []
+    attribute_list = random.choices(attribute_names, k = int(len(attribute_names)**0.5))
+    attribute_list.append('Class')
+    smaller_data = keep_certain_attributes(data, attribute_list)
+    for j in range(0, int(len(data)*0.5)):
+        # Select the attributes you want
+        sample.append(smaller_data[random.randint(0, len(smaller_data)-1)])
+    return sample
+
+
+
+def keep_certain_attributes(data, attribute_list):
+    """
+    Takes a dataset and attributes and removes all attributes not in the list. 
+    """
+    for i in range(0, len(data)):
+        data[i] = {key: data[i][key] for key in attribute_list}
+    return data
+
+def random_forest(data, default):
+    forest = []
+    for i in range(0, 100):
+        #Append this 100 times
+        sample = random_forest_sample(data)
+        Tree = ID3(sample, 0)
+        forest.append(Tree)
+    return forest
+
+def random_forest_evaluate(forest, d):
+    predictions = []
+    for i in range(0, len(forest)):
+        # Evaluate with each forest
+        predictions.append(evaluate(forest[i], d))
+    return max(set(predictions), key = predictions.count)
+
+def forest_test(forest, test_data):
+    correct = 0
+    incorrect = 0
+    for i in range(0, len(test_data)):
+        if random_forest_evaluate(forest, test_data[i]) == test_data[i]['Class']:
+            correct += 1
+        else:
+            incorrect += 1
+    if correct + incorrect == 0:
+        return 0
+    else:
+        return (correct / (correct + incorrect))
+
+
+train_d, test_d= train_test_split("candy.data")
+print(test(ID3(train_d, 0), test_d))
+print(forest_test(random_forest(train_d, 0), test_d))
+
+
