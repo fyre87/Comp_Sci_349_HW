@@ -139,17 +139,25 @@ def train_test_split(d):
     if type(d) == str:
         # If given a file path, parse it first
         d = parse.parse(d)
-    train_d = d[0:int(len(d)*0.6)] 
-    test_d = d[int(len(d)*0.4):len(d)] 
+    train_d = d[0:int(len(d)*0.4)] 
+    validation_d = d[int(len(d)*0.4):int(len(d)*0.6)] 
+    test_d = d[int(len(d)*0.6):len(d)] 
 
-    return train_d, test_d
+    return train_d, validation_d, test_d
 
 def test_random_forest():
-    train_d, test_d = train_test_split("candy.data")
+    train_d, validation_d, test_d = train_test_split("candy.data")
     Tree = ID3.ID3(train_d, 0)
-    print("Decision Tree Test Accuracy: ", ID3.test(Tree, test_d))
-    Forest = ID3.random_forest(train_d, 0)
-    print("Random Forest Test AccuracyL ", ID3.forest_test(Forest, test_d))
+    Tree = ID3.prune(Tree, validation_d)
+    print("Pruned Decision Tree Test Accuracy: ", ID3.test(Tree, test_d))
+    Tree = ID3.ID3(train_d + validation_d, 0)
+    print("Unpruned Decision Tree Test Accuracy: ", ID3.test(Tree, test_d))
+    forest_acc = []
+    for i in range(0, 50):
+        Forest = ID3.random_forest(train_d + validation_d, 0)
+        forest_acc.append(ID3.forest_test(Forest, test_d))
+    
+    print("Random Forest Test Accuracy: ", sum(forest_acc)/len(forest_acc))
 
-testID3_graph()
+#testID3_graph()
 test_random_forest()
