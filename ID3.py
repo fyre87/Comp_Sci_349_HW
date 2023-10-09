@@ -7,16 +7,14 @@ import copy
 def getData(d):
     """
     in   /  d: raw .csv file OR a list of dicts
-    out  /  training_d: 80% of data as list of dicts,
-            validation_d: 20% of data as list of dicts,
+    out  /  d: data as list of dicts,
             attr_names: list of attribute names (including target attr)
             most_common: calculates most common 'Class' (aka target attr) of entire dataset
     """
     if type(d) == str:
         # If given a file path, parse it first
         d = parse(d)
-    data = d #Take 80% for training
-    #assert len(training_d) + len(validation_d) == len(d)
+    data = d 
     attr_names = list(d[0].keys())
     Y_valList = [x['Class'] for x in d]
     most_common = max(set(Y_valList), key=Y_valList.count) 
