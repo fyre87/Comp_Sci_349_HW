@@ -130,7 +130,26 @@ def testID3_graph():
     plt.ylabel("Accuracy")
     plt.show()
 
-    
+def train_test_split(d):
+    """
+    in   /  d: raw .csv file OR a list of dicts
+    out  /  train_d: 60% of data as list of dicts,
+            test_d: 40% of data as list of dicts,
+    """
+    if type(d) == str:
+        # If given a file path, parse it first
+        d = parse.parse(d)
+    train_d = d[0:int(len(d)*0.6)] 
+    test_d = d[int(len(d)*0.4):len(d)] 
+
+    return train_d, test_d
+
+def test_random_forest():
+    train_d, test_d = train_test_split("candy.data")
+    Tree = ID3.ID3(train_d, 0)
+    print("Decision Tree Test Accuracy: ", ID3.test(Tree, test_d))
+    Forest = ID3.random_forest(train_d, 0)
+    print("Random Forest Test AccuracyL ", ID3.forest_test(Forest, test_d))
 
 testID3_graph()
-#testPruningOnHouseData("house_votes_84.data")
+test_random_forest()
