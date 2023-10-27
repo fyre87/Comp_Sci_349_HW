@@ -164,13 +164,35 @@ def show(file_name,mode):
                 print(' ')
         print('LABEL: %s' % data_set[obs][0],end='')
         print(' ')
-            
-def main():
 
+#Calculate prediction matrix and accuracy
+def confusion_matrix(prediction, actual):
+    matrix = [[0] * 10 for _ in range(10)]
+    num_correct = 0
+    for i in range(0, len(prediction)):
+        matrix[prediction[i]][actual[i]] = 1 + matrix[prediction[i]][actual[i]]
+        if actual[i] == prediction[i]:
+            num_correct += 1
+    accuracy = (num_correct / len(prediction))
+    return matrix, accuracy
+
+
+def main():
     train = 'train.csv'
     query = 'test.csv'
-    res = knn(train, query, 'euclidean')
-    print(res)
+    q_labels, q_features = splitData(query)
+    prediction = knn(train, query, 'euclidean')
+    print(prediction)
+
+    matrix, accuracy = confusion_matrix(prediction, q_labels)
+    print("Confusion Matrix: ")
+    for i in range(0, len(matrix)):
+        print(matrix[i])
+    # Predicted is x, actual is y
+    #print(matrix[0][2])
+    print("Accuracy: ", 100*accuracy, "%")
+
+
     # D = read_data_COMP('train.csv')
     # features = [item[1] for item in D]
     # print(features)
