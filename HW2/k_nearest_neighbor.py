@@ -104,10 +104,13 @@ class KNearestNeighbor():
         for i in range(len(self.features)):
             if self.distance_measure == 'euclidean':
                 distList.append((self.labels[i], euclidean(self.features[i], example_features)))
+                #sorting by lowest distance x[1] for euclidean
+                distList.sort(key = lambda x: x[1])
             elif self.distance_measure == 'cosim':
                 distList.append((self.labels[i], cosim(self.features[i], example_features)))
-            #sorting by lowest distance x[1]
-            distList.sort(key = lambda x: x[1])
+                #sorting by highest distance x[1] for cosim
+                distList.sort(key = lambda x: x[1], reverse = True)
+            
             #getting just the labels i[0], distances are i[1]
             k_nns = [i[0] for i in distList[:self.n_neighbors]]
         

@@ -74,10 +74,10 @@ def splitData(data, num_obs = 200):
 # All hyper-parameters should be hard-coded in the algorithm.
 def knn(train,query,metric):
     #input: train & query are filenames
-    knn = KNearestNeighbor(5, metric)
+    knn = KNearestNeighbor(6, distance_measure=metric)
 
     t_labels, t_features = splitData(train)
-    print(len(t_labels))
+    #print(len(t_labels))
     knn.fit(t_features, t_labels)
     q_labels, q_features = splitData(query)
     return knn.predict(q_features)
@@ -181,15 +181,15 @@ def main():
     train = 'train.csv'
     query = 'test.csv'
     q_labels, q_features = splitData(query)
-    prediction = knn(train, query, 'euclidean')
+    prediction = knn(train, query, 'cosim')
     print(prediction)
 
     matrix, accuracy = confusion_matrix(prediction, q_labels)
     print("Confusion Matrix: ")
     for i in range(0, len(matrix)):
         print(matrix[i])
-    # Predicted is x, actual is y
-    #print(matrix[0][2])
+    # Predicted is up down, actual is left right
+
     print("Accuracy: ", 100*accuracy, "%")
 
 
