@@ -3,6 +3,7 @@ import numpy as np
 import csv 
 from random import sample
 from k_nearest_neighbor import KNearestNeighbor
+from kmeans import KMeans
 
 # # returns Euclidean distance between vectors a dn b
 # def euclidean(a,b):
@@ -60,10 +61,12 @@ from k_nearest_neighbor import KNearestNeighbor
 #     return probLabel
 
 
-def splitData(data, num_obs = 200):
+def splitData(data):
     #input: data is a filename
     d = read_data_COMP(data)
-    labels =  [item[0] for item in d[:num_obs]]
+    num_obs = len(d)
+    #num_obs = 200
+    labels = [item[0] for item in d[:num_obs]]
     features = [item[1] for item in d[:num_obs]]
     npLabels = np.asarray(labels)
     npFeatures = np.asarray(features)
@@ -77,7 +80,6 @@ def knn(train,query,metric):
     knn = KNearestNeighbor(6, distance_measure=metric)
 
     t_labels, t_features = splitData(train)
-    #print(len(t_labels))
     knn.fit(t_features, t_labels)
     q_labels, q_features = splitData(query)
     return knn.predict(q_features)
@@ -98,28 +100,11 @@ def knn(train,query,metric):
 # labels should be ignored in the training set
 # metric is a string specifying either "euclidean" or "cosim".  
 # All hyper-parameters should be hard-coded in the algorithm.
+
 def kmData(data_set):
     km_D = [item[1] for item in data_set]
     return km_D
 
-def kmeans(train,query,metric):
-    k = 3
-    max_iters = 3
-
-    #initiating centroids randomly
-    centroids = sample(train, k)
-
-    for i in range(max_iters):
-        groups = {}
-        distList = []
-        for i in range(k):
-            groups[i] = []
-        for t in train:
-            distList = [euclidean(t, centroids[c]) for c in centroids]
-            t_Group = distList.index(min(distList))
-            groups[t_Group].append(t)
-
-    return(labels)
 
 def read_data(file_name):
     data_set = []
@@ -182,7 +167,6 @@ def main():
     query = 'test.csv'
     q_labels, q_features = splitData(query)
     prediction = knn(train, query, 'cosim')
-    print(prediction)
 
     matrix, accuracy = confusion_matrix(prediction, q_labels)
     print("Confusion Matrix: ")
@@ -197,7 +181,45 @@ def main():
     # features = [item[1] for item in D]
     # print(features)
     # show('valid.csv','pixels')
+
+def kmeans(train,query,metric, n_clusters):
+    kmeans = KMeans(n_clusters = n_clusters, distance_measure=metric)
+    t_labels, t_features = splitData(train)
+    kmeans.fit(t_features)
+    q_labels, q_features = splitData(query)
+    return kmeans.predict(q_features)
+
+# DOES NOT CHANGE CLUSTERS. Only useful in determining accuracy
+def rearrange_predictions(prediction, actual, n_clusters):
+    # Takes predictions on train data and changes all predictions to be the mode label of the cluster
+    matrix = [[0] * 10 for _ in range(n_clusters)]
+
+    for i in range(0, len(prediction)):
+        matrix[prediction[i]][actual[i]] = 1 + matrix[prediction[i]][actual[i]]
+    
+    rearrange = []
+    for i in range(0, n_clusters):
+        rearrange.append(max(range(len(matrix[i])), key=lambda x : matrix[i][x]))
+    for i in range(0, len(prediction)):
+        prediction[i] = rearrange[prediction[i]]
+    return prediction
+
+def k_means_test():
+    train = 'train.csv'
+    query = 'test.csv'
+    q_labels, q_features = splitData(query)
+    n_clusters = 10
+    prediction = kmeans(train, query, 'cosim', n_clusters)
+    prediction = rearrange_predictions(prediction, q_labels, n_clusters)
+
+    matrix, accuracy = confusion_matrix(prediction, q_labels)
+    print("Confusion Matrix: ")
+    for i in range(0, len(matrix)):
+        print(matrix[i])
+    print("Accuracy: ", 100*accuracy, "%")
+    
     
 if __name__ == "__main__":
-    main()
+    k_means_test()
+    #main()
     
