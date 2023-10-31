@@ -213,10 +213,11 @@ def k_means_test():
     prediction = rearrange_predictions(prediction, q_labels, n_clusters)
 
     matrix, accuracy = confusion_matrix(prediction, q_labels)
-    print("Confusion Matrix: ")
-    for i in range(0, len(matrix)):
-        print(matrix[i])
-    print("Accuracy: ", 100*accuracy, "%")
+    if n_clusters == 10:
+        print("Confusion Matrix: ")
+        for i in range(0, len(matrix)):
+            print(matrix[i])
+        print("Accuracy: ", 100*accuracy, "%")
     
     
 if __name__ == "__main__":
