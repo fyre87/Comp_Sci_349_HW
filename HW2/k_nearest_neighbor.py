@@ -31,7 +31,7 @@ def cosim(a,b):
     dist = dot(a,b) / (math.sqrt(dot(a,a)) * math.sqrt(dot(b,b)))
 
     #check vs numpy
-    dist1 = np.dot(a, b)/(np.linalg.norm(a)*np.linalg.norm(b))
+    #dist1 = np.dot(a, b)/(np.linalg.norm(a)*np.linalg.norm(b))
     # print(dist,dist1)
     return(dist)
 
@@ -145,6 +145,7 @@ class KNearestNeighbor():
             labels {np.ndarray} -- Labels for each data point, of shape (n_samples,
                 n_dimensions). This n_dimensions should be the same as n_dimensions of targets in fit function.
         """
+        query_features = np.where(query_features <=128, 0, 1)
         labels = [self.predict_help(i) for i in query_features]
         return labels
 
